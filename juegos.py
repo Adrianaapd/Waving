@@ -1,105 +1,90 @@
 import streamlit as st
-from PIL import Image
-import base64
-
-# Configuración de página
-st.set_page_config(page_title="Juegos del Agua", layout="wide")
-
-
-# Título
-st.markdown("<h1 style='text-align: center; color: black;'>🌊 Juegos para salvar agua 💧</h1>", unsafe_allow_html=True)
-st.markdown("<h3 style='text-align: center; color: black;'>Elige un juego para comenzar</h3>", unsafe_allow_html=True)
-
-# Botones grandes
-col1, col2, col3 = st.columns(3)
-with col1:
-    if st.button("✅ Verdadero o Falso", use_container_width=True):
-        st.session_state.juego = "vf"
-with col2:
-    if st.button("🧠 Quiz", use_container_width=True):
-        st.session_state.juego = "quiz"
-with col3:
-    if st.button("🃏 Memory", use_container_width=True):
-        st.session_state.juego = "memory"
-
-        import streamlit as st
-import time
 import random
+from datetime import datetime, timedelta
 
-# ---------------- CONFIGURACIÓN INICIAL ----------------
+import streamlit as st
 
-if 'puntos_vf' not in st.session_state:
-    st.session_state.puntos_vf = 0
-if 'index_vf' not in st.session_state:
-    st.session_state.index_vf = 0
-if 'inicio_vf' not in st.session_state:
-    st.session_state.inicio_vf = time.time()
+# Si no existe la puntuación de los juegos, inicialízala
+if "puntuacion_juegos" not in st.session_state:
+    st.session_state.puntuacion_juegos = 0  # Empezamos con puntuación de 0
 
-# ---------------- PREGUNTAS ----------------
+# Ejemplo de un juego (quiz, verdadero o falso, etc.)
+# Simularemos que el usuario obtiene 10 puntos por acertar en el juego.
+puntos_juego = 10  # Esto lo tendrías que actualizar con la lógica de tu juego
 
-preguntas_vf = [
-    {"pregunta": "Ducharse consume menos agua que bañarse.", "respuesta": True},
-    {"pregunta": "Lavar el coche con manguera gasta menos que en un túnel de lavado.", "respuesta": False},
-    {"pregunta": "Cerrar el grifo mientras te cepillas los dientes ahorra agua.", "respuesta": True},
-    {"pregunta": "El lavavajillas siempre gasta más agua que lavar a mano.", "respuesta": False},
-    {"pregunta": "Plantar cactus ayuda a ahorrar agua en jardinería.", "respuesta": True}
+# Al final del juego, sumamos la puntuación obtenida al total de los juegos
+st.session_state.puntuacion_juegos += puntos_juego
+
+# Mostrar la puntuación del juego
+st.write(f"Puntuación en los juegos: {st.session_state.puntuacion_juegos}")
+# Inicializamos las variables de puntuación
+if "puntuacion_juegos" not in st.session_state:
+    st.session_state.puntuacion_juegos = 0
+
+# --- JUEGO DE QUIZ ---
+st.title("Juego de Quiz - Consumo de Agua")
+st.write("Responde correctamente las siguientes preguntas para ganar puntos.")
+
+# Lista de preguntas y respuestas correctas
+preguntas = [
+    {"pregunta": "¿Cuánto tiempo en minutos se recomienda que dure una ducha para ahorrar agua?", "opciones": ["5 minutos", "10 minutos", "15 minutos"], "respuesta_correcta": "5 minutos"},
+    {"pregunta": "¿Qué dispositivo consume más agua en un hogar promedio?", "opciones": ["Ducha", "Lavadora", "Lavavajillas"], "respuesta_correcta": "Lavadora"},
+    {"pregunta": "¿Cuántos litros de agua consume una manguera por minuto?", "opciones": ["10L", "15L", "20L"], "respuesta_correcta": "15L"}
 ]
 
-# Barajar preguntas
-random.shuffle(preguntas_vf)
+# Variable para el puntaje del quiz
+puntaje_quiz = 0
 
-# ---------------- FUNCIÓN PARA MOSTRAR PREGUNTA ----------------
+# Iterar sobre las preguntas y mostrar las opciones
+for pregunta in preguntas:
+    respuesta = st.radio(pregunta["pregunta"], pregunta["opciones"], key=pregunta["pregunta"])
+    
+    if respuesta == pregunta["respuesta_correcta"]:
+        puntaje_quiz += 10
+        st.success("¡Respuesta correcta! +10 puntos")
+    elif respuesta:
+        st.error("Respuesta incorrecta.")
 
-def mostrar_pregunta():
-    pregunta_actual = preguntas_vf[st.session_state.index_vf]
-    st.markdown(f"<h3 style='color:black'>{pregunta_actual['pregunta']}</h2>", unsafe_allow_html=True)
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("✅ Verdadero"):
-            verificar_respuesta(True)
-    with col2:
-        if st.button("❌ Falso"):
-            verificar_respuesta(False)
+# Mostrar puntuación del quiz
+st.write(f"**Puntuación total en el Quiz:** 🌟 {puntaje_quiz} puntos")
 
-# ---------------- VERIFICAR RESPUESTA ----------------
+# Botón para guardar progreso del quiz
+if st.button("Guardar progreso del Quiz"):
+    st.session_state.puntuacion_juegos += puntaje_quiz  # Sumar la puntuación del quiz al total
+    st.success("Puntos del Quiz guardados correctamente.")
 
-def verificar_respuesta(respuesta_usuario):
-    correcta = preguntas_vf[st.session_state.index_vf]['respuesta']
-    if respuesta_usuario == correcta:
-        st.session_state.puntos_vf += 1
-        st.success("¡Correcto!")
-    else:
-        st.error("Ups... Incorrecto.")
-    st.session_state.index_vf += 1
-    time.sleep(1)
-    st.rerun()
+st.divider()
 
+# --- JUEGO DE VERDADERO/FALSO ---
+st.title("Juego de Verdadero o Falso")
 
-# ---------------- MOSTRAR CRONÓMETRO ----------------
+# Lista de afirmaciones para el juego
+afirmaciones = [
+    {"afirmacion": "El agua potable es un recurso infinito.", "respuesta_correcta": "Falso"},
+    {"afirmacion": "El grifo abierto consume más agua que la ducha.", "respuesta_correcta": "Falso"},
+    {"afirmacion": "Una persona promedio consume 140 litros de agua al día.", "respuesta_correcta": "Verdadero"}
+]
 
-tiempo_transcurrido = int(time.time() - st.session_state.inicio_vf)
-st.markdown(f"<h4 style='color:lightblue'>🕒 Tiempo: {tiempo_transcurrido} segundos</h4>", unsafe_allow_html=True)
+# Variable para la puntuación de verdadero/falso
+puntaje_vf = 0
 
-# ---------------- MOSTRAR PUNTAJE Y PREGUNTAS ----------------
+# Mostrar las afirmaciones y opciones
+for afirmacion in afirmaciones:
+    respuesta = st.radio(afirmacion["afirmacion"], ["Verdadero", "Falso"], key=afirmacion["afirmacion"])
+    
+    if respuesta == afirmacion["respuesta_correcta"]:
+        puntaje_vf += 10
+        st.success("¡Correcto! +10 puntos")
+    elif respuesta:
+        st.error("Incorrecto.")
 
-if st.session_state.index_vf < len(preguntas_vf):
-    mostrar_pregunta()
-else:
-    st.balloons()
-    st.markdown(f"<h2 style='color:lightgreen'>🎉 ¡Juego terminado!</h2>", unsafe_allow_html=True)
-    st.markdown(f"<h3 style='color:black'>Puntuación final: {st.session_state.puntos_vf}/{len(preguntas_vf)}</h3>", unsafe_allow_html=True)
+# Mostrar puntuación de verdadero/falso
+st.write(f"**Puntuación total en Verdadero/Falso:** 🌟 {puntaje_vf} puntos")
 
-    if st.session_state.puntos_vf == len(preguntas_vf):
-        st.success("🌟 ¡Eres un maestro del ahorro de agua!")
-    elif st.session_state.puntos_vf >= 3:
-        st.info("💧 ¡Buen trabajo! Pero aún puedes mejorar.")
-    else:
-        st.warning("🚿 ¡Sigue aprendiendo para salvar el agua!")
+# Botón para guardar progreso de verdadero/falso
+if st.button("Guardar progreso de Verdadero/Falso"):
+    st.session_state.puntuacion_juegos += puntaje_vf  # Sumar la puntuación de verdadero/falso al total
+    st.success("Puntos de Verdadero/Falso guardados correctamente.")
 
-    if st.button("🔁 Volver a jugar"):
-        st.session_state.puntos_vf = 0
-        st.session_state.index_vf = 0
-        st.session_state.inicio_vf = time.time()
-        st.rerun()
-
+st.divider()
 

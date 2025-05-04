@@ -1,61 +1,99 @@
 import streamlit as st
+import firebase_admin
+from firebase_admin import credentials, firestore
+from datetime import datetime, timedelta
 
-st.set_page_config(page_title="Mis Objetivos de Agua", layout="centered")
+# Inicializamos Firebase (si aún no está inicializado)
+if not firebase_admin._apps:
+    cred = credentials.Certificate("path_to_your_serviceAccountKey.json")  # Ruta al archivo JSON de Firebase
+    firebase_admin.initialize_app(cred)
 
-st.title("🌱 Objetivos para reducir tu consumo de agua")
-st.write("Selecciona lo que vas logrando cada día y haz pequeños cambios que marcan una gran diferencia.")
+# Conectamos a Firestore
+db = firestore.client()
 
-# --- Objetivos diarios
-st.header("📅 Objetivos Diarios")
-diarios = {
-    "Ducha rápida (menos de 5 minutos)": False,
-    "Cerrar el grifo al cepillarme los dientes": False,
-    "Usar solo una carga completa en el lavavajillas": False,
-    "No regar plantas en horas de sol fuerte": False
+# Función para cargar los datos de perfil desde Firebase
+def cargar_perfil(usuario_id):
+    doc_ref = db.collection('usuarios').document(usuario_id)
+    doc = doc_ref.get()
+    if doc.exists:
+        return doc.to_dict()
+    else:
+        return None
+
+# Función para guardar datos del perfil en Firebase
+def guardar_perfil(usuario_id, datos):
+    db.collection('usuarios').document(usuario_id).set(datos, merge=True)
+
+# Suponiendo que el usuario tiene un ID único (debes adaptar esto a tu sistema de autenticación)
+usuario_id = "usuario_123"  # Este valor debe ser dinámico basado en el usuario autenticado
+
+# Cargar los datos del perfil
+perfil = cargar_perfil(usuario_id)
+
+# Si el perfil existe en Firebase, lo cargamos en la sesión
+if perfil:
+    st.session_state.puntuacion = perfil.get("puntuacion", 0)
+    st.session_state.objetivos = perfil.get("objetivos", {})
+    st.session_state.nombre = perfil.get("nombre", "")
+    st.session_state.correo = perfil.get("correo", "")
+else:
+    # Si no existe, inicializamos los datos del perfil
+    st.session_state.puntuacion = 0
+    st.session_state.objetivos = {}
+    st.session_state.nombre = ""
+    st.session_state.correo = ""
+
+# Mostrar el formulario para que el usuario ingrese su nombre y correo
+st.title("Perfil del Usuario")
+
+# Campos de entrada para el nombre y correo
+st.session_state.nombre = st.text_input("Nombre de usuario", value=st.session_state.nombre)
+st.session_state.correo = st.text_input("Correo electrónico", value=st.session_state.correo)
+
+# Mostrar la puntuación y los objetivos
+st.write(f"Puntuación: {st.session_state.puntuacion}")
+
+# Mostrar objetivos y permitir marcar progreso
+st.subheader("Objetivos")
+
+# Ejemplo de objetivos
+objetivos = {
+    "diarios": {
+        "Ahorrar 10L de agua hoy": False,
+        "No usar el lavavajillas más de 3 veces al día": False,
+    },
+    "semanales": {
+        "Ahorrar 50L de agua esta semana": False,
+        "No dejar el grifo abierto más de 15 minutos al día": False,
+    },
+    "mensuales": {
+        "Ahorrar 200L de agua este mes": False,
+        "Reducir el consumo de manguera en un 50%": False,
+    }
 }
 
-progreso_diario = 0
-for objetivo in diarios:
-    if st.checkbox(objetivo, key=objetivo):
-        progreso_diario += 1
+# Mostrar los objetivos y permitir marcar los completados
+for tipo, objetivos_lista in objetivos.items():
+    st.subheader(tipo.capitalize())
+    for objetivo, completado in objetivos_lista.items():
+        objetivo_completado = st.checkbox(objetivo, value=completado, key=f"{tipo}_{objetivo}")
+        if objetivo_completado:
+            st.session_state.objetivos[objetivo] = True
+            st.session_state.puntuacion += 10  # Incrementar la puntuación al completar el objetivo
 
-# --- Objetivos semanales
-st.header("📆 Objetivos Semanales")
-semanales = {
-    "Revisar que no haya grifos goteando": False,
-    "Usar lavadora solo con carga completa": False,
-    "Recolectar agua de lluvia para regar (si es posible)": False,
-    "Informar a mi familia sobre cómo ahorrar agua": False
-}
+# Botón para guardar la puntuación (si cambia algo)
+if st.button("Guardar Progreso"):
+    datos_perfil = {
+        "nombre": st.session_state.nombre,
+        "correo": st.session_state.correo,
+        "puntuacion": st.session_state.puntuacion,
+        "objetivos": st.session_state.objetivos
+    }
+    guardar_perfil(usuario_id, datos_perfil)
+    st.success("Progreso guardado correctamente.")
 
-progreso_semanal = 0
-for objetivo in semanales:
-    if st.checkbox(objetivo, key=objetivo + "_sem"):
-        progreso_semanal += 1
+# Mostrar la puntuación del usuario
+st.write(f"**Puntuación total:** 🌟 {st.session_state.puntuacion} puntos")
 
-# --- Objetivos mensuales
-st.header("📅 Objetivos Mensuales")
-mensuales = {
-    "Instalar reductores de caudal en los grifos": False,
-    "Analizar mi factura de agua y buscar formas de mejorar": False,
-    "Crear un plan personal de ahorro de agua": False,
-    "Desarrollar un hábito sostenible nuevo (a elegir)": False
-}
-
-progreso_mensual = 0
-for objetivo in mensuales:
-    if st.checkbox(objetivo, key=objetivo + "_mes"):
-        progreso_mensual += 1
-
-# --- Progreso total
-total_objetivos = len(diarios) + len(semanales) + len(mensuales)
-completados = progreso_diario + progreso_semanal + progreso_mensual
-
-st.markdown("---")
-st.subheader("📊 Tu progreso total")
-st.progress(completados / total_objetivos)
-
-st.success(f"Has completado {completados} de {total_objetivos} objetivos. ¡Sigue así!")
-
-st.caption("Pequeños pasos diarios pueden tener un gran impacto en el planeta 🌍")
-
+# Opcional: Mostrar un mensaje de bienvenida y progreso
+st.write("Tu progreso se guarda automáticamente.")
