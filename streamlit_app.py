@@ -1,5 +1,7 @@
 import streamlit as st
-import streamlit as st
+import os
+import random
+from PIL import Image
 
 
 #definimos nuestro logo
@@ -19,10 +21,7 @@ pg = st.navigation([home,perfil,objetivos,juego,chat])
 pg.run()
 
 
-import streamlit as st
-import os
-import random
-from PIL import Image
+
 
 # Cargar imágenes de la carpeta
 carpeta = "imagenes_inicio"
