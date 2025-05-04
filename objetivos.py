@@ -44,7 +44,8 @@ else:
     st.session_state.correo = ""
 
 # Mostrar el formulario para que el usuario ingrese su nombre y correo
-st.title("Perfil del Usuario")
+st.title("OBJETIVOS")
+st.write("Poque cada pequeña gota cuenta")
 
 # Campos de entrada para el nombre y correo
 st.session_state.nombre = st.text_input("Nombre de usuario", value=st.session_state.nombre)
