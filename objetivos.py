@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 # Verificamos si ya se ha inicializado la app de Firebase
 if not firebase_admin._apps:
     # Si no está inicializada, lo hacemos con las credenciales
-    cred = credentials.Certificate('.secrets/waving-000c-firebase-adminsdk-fbsvc-bfbe3112b5.json')  # Reemplaza con la ruta de tu archivo de credenciales
+    cred = credentials.Certificate('/workspaces/Waving/.secrets/waving-000c-firebase-adminsdk-fbsvc-bfbe3112b5.json')  # Reemplaza con la ruta de tu archivo de credenciales
     firebase_admin.initialize_app(cred)
 else:
     # Si ya está inicializada, no la volvemos a inicializar
