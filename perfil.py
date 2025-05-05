@@ -3,23 +3,14 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 
 # Inicializamos Firebase (si aún no está inicializado)
+# Verificamos si ya se ha inicializado la app de Firebase
 if not firebase_admin._apps:
-    cred = credentials.Certificate({
-    "type": "service_account",
-    "project_id": "waving-000c",
-    "private_key_id": "bfbe3112b55ad08fc1245de42db4118767acfbe7",
-    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCX2uX1gvE6gMyw\ncTBOq9S5RkTaMZkfgtYm/IRU4O0glvmgbh34kfotlsBy5meZDcBt0LUPl7QQIsin\ngzf+S6852fwsCMiPKiYjOyQyIuKu0CDCyYoFVL1QLm0cgKNjAgQKUntufUnGNHCh\nvs5fXts599jrca06yNuIV6LKxm6oQ5QFM/FvzICLsD7TpWiLDbY0QomZ7s1+gOPg\nZ/LfczttWFkA7QKUwLXuG6+MbeCIDM8NC0FBh3m5gLNQYxewszsQRNWWC1rUv1wb\n+Xls7ba+36nWzC14sIq4sLRgX/mMZwkIeoLuTRUkvs2rdwjcRMLjd3NgGk6enwtE\nz0hVT0vPAgMBAAECggEADJjLf7DDiwtZL3/MNpJ5fH8QQhtgLOWBF03WOmZINW5g\nuca4tMCDRNnfEAj96gvifRmVk3wNo1MHWyH++JjVqdJj4VE/NeUUsdJ7n68WJ9M7\nDH2EdgnABJE9WuJu600lAagy9gjtoEQEXd6CpxWq0OW2+Fz/NkOoNmiyp+iLEGkd\n/ZNTJ+VVwfNkgsZ3JOtAdv6uqVs5fzWrxuHAL1KnsL90/F+WzadHvi8ZFq8zXxe9\n/1z2DU7TmWGzubFfwRz/7yMopknTy4siho9T4OUag22utk2zdZO0mh1O/NilnaKH\nyrVy0fl79HNhd3KaOUs85qKPBrOdOUaRx3jI6GzgDQKBgQDFSS9Fm0Sglg9TjMQJ\na8W8qK/trVh7Ox/0BKDOsDDdEXM+H9fgbEuJNKD6YbnjSXXHVSigoQqzikvFZPsT\nJ1zW4OtyRIy6MIACEaWiASzz+xwHpwX7cNYOMv0RYzI33v8hOf0Rlojx6oIn7ebb\nKYwv1YCjyEqj0eixMVsiGL/enQKBgQDFDG5+PM9fWHww/AKAp7QGt/J/qzucboEf\nfJYALndd5IRfePcJAENiAe71N9/ZoZzvgnDpRdKxUGn4YNeG+VO0fS7gY7gekGEQ\ndFT/gb6TUicINLL4f4vW0vqqcgAhBQIgNUY0shehQ7usmZt+0GORw/0vE9Zbe7SJ\nTe91N/qyWwKBgCi8P8KDmNv/oBKEUkYPtriJrCnLTSXEw4hDHGERCEXdQIpnUM/K\nDJ67+zE31IYVuPf7oXPpTKhdud98RktiKU1FC9iARv563TOQKT8WNw35n4QE/Ls6\nRTiRVqesb8YRiWR28MYc6xHodg+Ak9ZU8dk+oF0xEhhZU06i/kpACf4RAoGAF04E\nF2wLvqQRdB2qEhtDgHPq+0x+LV8oaFfsybK1LWakfUIqPWdJkOLXpyrnj668h9su\njXhTleMD1XtmojEExFj13VYN5Zd/01le4CUxK+1QbnkFHbzABjVHrjbzavRTrwl9\n9yeFAe6n2J8GM/ZjgE7kt9epx4IW9RJBmuR3AvcCgYAVKSSmrw7RcODQeWH3iJxk\n8f1lKqU2oxyAYhKK/bfE74RlS0GpTGMaBPfH5qJsMa6R7FHymGG3KWHgdiTazbVE\nnYX8WODAxqpX9vIKFtxlhu1v8rt/Fg56Cw+X3onzmnIAZFe069n1ZEgvkNhRNiRr\n7y85W79Bhc9pydA/rDb3wA==\n-----END PRIVATE KEY-----\n",
-    "client_email": "firebase-adminsdk-fbsvc@waving-000c.iam.gserviceaccount.com",
-    "client_id": "102032473827559384613",
-    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-    "token_uri": "https://oauth2.googleapis.com/token",
-    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40waving-000c.iam.gserviceaccount.com",
-    "universe_domain": "googleapis.com"
-    }
-    )
-
+    # Si no está inicializada, lo hacemos con las credenciales
+    cred = credentials.Certificate('.secrets/waving-000c-firebase-adminsdk-fbsvc-970bb4c6d4.json')  # Reemplaza con la ruta de tu archivo de credenciales
     firebase_admin.initialize_app(cred)
+else:
+    # Si ya está inicializada, no la volvemos a inicializar
+    app = firebase_admin.get_app()
 
 # Conectamos a Firestore
 db = firestore.client()
